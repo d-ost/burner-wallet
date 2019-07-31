@@ -18,9 +18,9 @@ export default class Boost extends React.Component {
   constructor(props) {
     super(props);
     let initialState = {
-      amount: '',
-      beneficiary: '',
-      canSend: false,
+      amount: props.balance,
+      beneficiary: props.beneficiary,
+      canSend: true,
     };
     this.state = initialState;
     this.boost = this.boost.bind(this);
@@ -28,7 +28,16 @@ export default class Boost extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({canSend: this.canSend()});
+
+    this.setState({
+      amount:this.props.balance,
+      beneficiary: this.props.beneficiary,
+    });
+
+    this.setState({
+      canSend: this.canSend(),
+    });
+
     setTimeout(() => {
       if (!this.state.beneficiary && this.addressInput) {
         this.addressInput.focus();
@@ -95,7 +104,7 @@ export default class Boost extends React.Component {
     const balance = await eip20Contract.methods.balanceOf(from).call();
    console.log('balance  ' ,balance);
     methodCall = ostComposer.methods.requestStake(
-      this.state.amount,
+      this.state.balance  ,
       this.state.beneficiary,
       0, // Gasprice
       0, // Gas limit
@@ -186,12 +195,13 @@ export default class Boost extends React.Component {
               <label
                 htmlFor="amount_input">{i18n.t('boost.beneficiary')}</label>
               <div className="input-group">
-                <input type="text" className="form-control" placeholder="0x..."
-                       value={this.state.toAddress}
+                <label>{this.state.beneficiary}</label>
+                {/*<input type="text" className="form-control" placeholder="0x..."
+                       value={this.state.beneficiary}
                        ref={(input) => {
                          this.addressInput = input;
                        }}
-                       onChange={event => this.updateState('beneficiary', event.target.value)}/>
+                       onChange={event => this.updateState('beneficiary', event.target.value)}/>*/}
               </div>
             </div>
             <div>  {this.state.beneficiary && this.state.beneficiary.length === 42 &&
