@@ -1,6 +1,7 @@
 import React from 'react';
+import axios from 'axios';
 import { Scaler } from "dapparatus";
-const abi = require("../contracts/EIP20Token.abi.js");
+const abi = require("../mosaic-abi/EIP20.abi");
 
 export default class EIP20Token extends React.Component {
 
@@ -36,6 +37,22 @@ export default class EIP20Token extends React.Component {
     setTimeout(this.pollInterval.bind(this),30)
   }
 
+  async fundFromFaucet() {
+    const {faucetURL, chainId} = this.props.token;
+    const beneficiary = this.props.metaAccount.address;
+
+    const response = await axios.post(faucetURL, {
+        beneficiary: `${beneficiary}@${chainId}`,
+      }
+    );
+
+    console.log('transaction hash ', response.data.txHash);
+    this.props.changeAlert({
+      type: 'success',
+      message: 'Funding from faucet, transaction hash ' + response.data.txHash
+    });
+  }
+
   async pollInterval(){
 
     if(this.state && this.state.EIP20Token){
@@ -60,20 +77,21 @@ export default class EIP20Token extends React.Component {
 
   }
 
-  isBoosted() {
-    return this.props.token.type === 'ERC' && this.props.token.chain=== 'auxiliary'
+  canBoost() {
+    return this.props.token.type === 'ERC'
+      && this.props.token.chain !== 'auxiliary' &&
+      this.state.eip20TokenBalance !== '0'
   }
 
   getSymbol() {
     let symbol = this.state.eip20TokenSymbol;
-    if (this.isBoosted()){
+    if (this.props.token.chain === 'auxiliary') {
       symbol = symbol+' 💪';
     }
     return symbol;
   }
 
   getBoostButton() {
-    if (!this.isBoosted()) {
       return (
         <button style={{marginRight: '15px',
           backgroundImage: 'linear-gradient(rgb(250, 125, 54), rgb(247, 107, 28))',
@@ -86,17 +104,46 @@ export default class EIP20Token extends React.Component {
           border: "none",
           borderRadius: 3,
           fontWeight: 300,
-          fontSize: '1rem'}}
-          onClick={() => this.props.handleBoost(this.props.token)}
+          fontSize: '1rem',
+        }}
+          onClick={() => this.props.handleBoost({
+              token: this.props.token,
+              balance:this.state.eip20TokenBalance,
+              metaAccount: this.props.metaAccount
+            }
+            )}
         >
           Boost
         </button>
       );
-    }
-    return ('');
+  }
+
+  getFaucetButton() {
+    return (
+      <button style={{
+        marginRight: '15px',
+        backgroundImage: 'linear-gradient(rgb(250, 125, 54), rgb(247, 107, 28))',
+        backgroundColor: 'rgb(247, 107, 28)',
+        color: 'rgb(255, 255, 255)',
+        whiteSpace: 'nowrap',
+        cursor: 'pointer',
+        paddingLeft: '15px',
+        paddingRight: '15px',
+        border: "none",
+        borderRadius: 3,
+        fontWeight: 300,
+        fontSize: '1rem',
+      }}
+              onClick={() => this.fundFromFaucet()}
+      >
+        Faucet
+      </button>
+    );
   }
 
   render(){
+
+    console.log('can boost erc20', this.canBoost());
     if(!this.state.EIP20Token){
       return (
         <div>
@@ -116,8 +163,9 @@ export default class EIP20Token extends React.Component {
             {this.getSymbol()}
           </div>
         </div>
+
         <div style={{marginRight:25, marginLeft: 'auto'}}>
-          {this.getBoostButton()}
+          {this.canBoost() ? this.getBoostButton() : this.getFaucetButton()}
           <Scaler config={{startZoomAt:400,origin:"200px 30px",adjustedZoom:1}} style={{    display: 'inlineBlock',
             verticalAlign: 'middle',
             marginLeft: '15px'}}>
@@ -129,4 +177,5 @@ export default class EIP20Token extends React.Component {
       </div>
     )
   }
+
 }
