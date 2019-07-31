@@ -40,7 +40,6 @@ public/reload.txt
 **/*.bytecode
 **/*.abi
 **/*.address
-src/contracts
 deploy.log
 public/reload.txt
 geth.log
