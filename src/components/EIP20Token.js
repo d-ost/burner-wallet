@@ -1,6 +1,6 @@
 import React from 'react';
 import { Scaler } from "dapparatus";
-const abi = require("../contracts/EIP20Token.abi.js");
+const abi = require("../mosaic-abi/EIP20.abi");
 
 export default class EIP20Token extends React.Component {
 
@@ -82,8 +82,14 @@ export default class EIP20Token extends React.Component {
           border: "none",
           borderRadius: 3,
           fontWeight: 300,
-          fontSize: '1rem'}}
-          onClick={() => this.props.handleBoost(this.props.token)}
+          fontSize: '1rem',
+        }}
+          onClick={() => this.props.handleBoost({
+              token: this.props.token,
+              balance:this.state.eip20TokenBalance,
+              metaAccount: this.props.metaAccount
+            }
+            )}
         >
           Boost
         </button>
