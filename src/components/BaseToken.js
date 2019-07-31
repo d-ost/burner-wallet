@@ -11,7 +11,7 @@ export default class BaseToken extends React.Component {
 
   componentDidMount(){
     console.log("EIP20Token MODULE MOUNTED",);
-    this.props.state.web3.eth.getBalance(this.props.address).then((balance)=>{
+    this.props.token.web3.eth.getBalance(this.props.address).then((balance)=>{
       this.setState({
         balance: this.props.token.web3.utils.fromWei(""+balance,'ether')
       },()=>{

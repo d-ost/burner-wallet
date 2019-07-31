@@ -2,8 +2,8 @@ const Web3 = require('web3');
 const ostIcon = require('../images/ost.jpg');
 const ethereumIcon = require('../images/ethereum.png');
 
-const auxiliaryRPC = 'http://127.0.0.1:41000';
-const originRPC = 'http://127.0.0.1:41515';
+const auxiliaryRPC = 'http://34.243.117.168:41405';
+const originRPC = 'http://34.244.36.178:40005';
 const web3Origin = new Web3(new Web3.providers.HttpProvider(originRPC));
 const web3Auxiliary = new Web3(new Web3.providers.HttpProvider(auxiliaryRPC));
 
