@@ -829,6 +829,10 @@ changeAlert = (alert, hide=true) => {
     }, 2000);
   }
 };
+handleBoost(params){
+  this.boostParams = params;
+  this.changeView('boost');
+}
 goBack(){
   console.log("GO BACK")
   this.changeView('main')
@@ -1407,6 +1411,7 @@ render() {
                     openScanner={this.openScanner.bind(this)}
                     buttonStyle={buttonStyle}
                     changeAlert={this.changeAlert}
+                    handleBoost={this.handleBoost.bind(this)}
                     goBack={this.goBack.bind(this)}
                     token={token}
                   />)
@@ -1968,15 +1973,16 @@ render() {
                     {defaultBalanceDisplay}
                     <Boost
                       buttonStyle={buttonStyle}
-                      web3={this.state.web3}
-                      address={account}
+                      web3={this.boostParams.web3}
+                      address={this.state.account}
                       goBack={this.goBack.bind(this)}
                       changeView={this.changeView}
                       setReceipt={this.setReceipt}
                       changeAlert={this.changeAlert}
-                      metaAccount={this.originMetaAccount}
-                      ostComposerAddress={this.ostComposerAddress}
-                      valueTokenAddress={this.valueTokenAddress}
+                      metaAccount={metaAccount}
+                      ostComposerAddress={Mosaic.ostComposerAddress}
+                      valueTokenAddress={this.boostParams.address}
+                      gatewayAddress={this.boostParams.gatewayAddress}
                     />
                   </div>
                   <Bottom

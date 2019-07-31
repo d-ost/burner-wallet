@@ -83,7 +83,7 @@ export default class EIP20Token extends React.Component {
           borderRadius: 3,
           fontWeight: 300,
           fontSize: '1rem'}}
-        onClick={this.boostClicked}
+          onClick={() => this.props.handleBoost(this.props.token)}
         >
           Boost
         </button>
@@ -92,9 +92,6 @@ export default class EIP20Token extends React.Component {
     return ('');
   }
 
-  boostClicked() {
-    console.log('Yayyyyyyyy boost clicked');
-  }
   render(){
     if(!this.state.EIP20Token){
       return (
