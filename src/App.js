@@ -45,6 +45,11 @@ import namehash from 'eth-ens-namehash'
 import incogDetect from './services/incogDetect.js'
 import core, { mainAsset as xdai } from './core';
 
+import EIP20Token from './components/EIP20Token';
+import BaseToken from './components/BaseToken';
+import Mosaic from './mosaic/Mosaic';
+
+
 //https://github.com/lesnitsky/react-native-webview-messaging/blob/v1/examples/react-native/web/index.js
 import RNMessageChannel from 'react-native-webview-messaging';
 
@@ -824,6 +829,10 @@ changeAlert = (alert, hide=true) => {
     }, 2000);
   }
 };
+handleBoost(params){
+  this.boostParams = params;
+  this.changeView('boost');
+}
 goBack(){
   console.log("GO BACK")
   this.changeView('main')
@@ -1391,39 +1400,39 @@ render() {
 
           switch(view) {
             case 'main':
+              const tokens = Mosaic.getSupportedTokens();
+              const renderObject = [];
+              tokens.forEach((token)=>{
+                if (token.type === 'ERC') {
+                  renderObject.push(<EIP20Token
+                    metaAccount={metaAccount}
+                    state={this.state}
+                    address={account}
+                    openScanner={this.openScanner.bind(this)}
+                    buttonStyle={buttonStyle}
+                    changeAlert={this.changeAlert}
+                    handleBoost={this.handleBoost.bind(this)}
+                    goBack={this.goBack.bind(this)}
+                    token={token}
+                  />)
+                } else if (token.type === 'BASE') {
+                  renderObject.push(<BaseToken
+                    metaAccount={metaAccount}
+                    state={this.state}
+                    address={account}
+                    openScanner={this.openScanner.bind(this)}
+                    buttonStyle={buttonStyle}
+                    changeAlert={this.changeAlert}
+                    goBack={this.goBack.bind(this)}
+                    token={token}
+                  />);
+                }
+              });
+
             return (
               <div>
                 <div className="main-card card w-100" style={{zIndex:1}}>
-
-
-                  {extraTokens}
-
-                  <Balance
-                    icon={xdaiImg}
-                    selected={selected}
-                    text={xdai.name}
-                    amount={this.state.xdaiBalance}
-                    address={account}
-                    dollarDisplay={dollarDisplay}
-                  />
-                  <Ruler/>
-                  <Balance
-                    icon={daiImg}
-                    selected={selected}
-                    text="DAI"
-                    amount={this.state.daiBalance}
-                    address={account}
-                    dollarDisplay={dollarDisplay}
-                  />
-                  <Ruler/>
-                  <Balance
-                    icon={ethImg}
-                    selected={selected}
-                    text="ETH"
-                    amount={parseFloat(this.state.ethBalance) * parseFloat(this.state.ethprice)}
-                    address={account}
-                    dollarDisplay={dollarDisplay}
-                  />
+                  {renderObject}
                   <Ruler/>
                   {badgeDisplay}
 
@@ -1964,15 +1973,16 @@ render() {
                     {defaultBalanceDisplay}
                     <Boost
                       buttonStyle={buttonStyle}
-                      web3={this.state.web3}
-                      address={account}
+                      web3={this.boostParams.web3}
+                      address={this.state.account}
                       goBack={this.goBack.bind(this)}
                       changeView={this.changeView}
                       setReceipt={this.setReceipt}
                       changeAlert={this.changeAlert}
-                      metaAccount={this.originMetaAccount}
-                      ostComposerAddress={this.ostComposerAddress}
-                      valueTokenAddress={this.valueTokenAddress}
+                      metaAccount={metaAccount}
+                      ostComposerAddress={Mosaic.ostComposerAddress}
+                      valueTokenAddress={this.boostParams.address}
+                      gatewayAddress={this.boostParams.gatewayAddress}
                     />
                   </div>
                   <Bottom

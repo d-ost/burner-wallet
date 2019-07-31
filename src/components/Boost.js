@@ -28,7 +28,7 @@ export default class Boost extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({canSend: this.canSend()})
+    this.setState({canSend: this.canSend()});
     setTimeout(() => {
       if (!this.state.beneficiary && this.addressInput) {
         this.addressInput.focus();
@@ -59,17 +59,11 @@ export default class Boost extends React.Component {
       return false;
     }
 
-    //const {web3, ostComposerAddress, valueTokenAddress} = this.props;
-
-    const web3 = new Web3('http://localhost:41515');
-    const ostComposerAddress = web3.utils.toChecksumAddress('0x7cA3fFC834e0c0cC8D8f9F0Cf0036Fb4D61fe4f9');
-    const valueTokenAddress = web3.utils.toChecksumAddress('0x9AC77F4c0ca4D0F2142D7a77175cf4F1295fb2d8');
-    const gatewayAddress = web3.utils.toChecksumAddress('0xA7f056b1320fE619571849f138Cd1Ae2f2e64179');
+    const {web3, ostComposerAddress, valueTokenAddress, gatewayAddress, metaAccount} = this.props;
     const eip20Contract = new web3.eth.Contract(EIP20ABI, valueTokenAddress);
 
-    let privateKey;// = this.props.metaAccount.privateKey;
-    privateKey = '0x3542d6069c218683161b35aad86f9a8516095369d67e4865c801059ea4a2e659';
-    let from = web3.utils.toChecksumAddress('0x57253a8d0c423402b979543e128193cc0a25928d');
+    let privateKey = metaAccount.privateKey;
+    let from = web3.utils.toChecksumAddress(metaAccount.address);
     console.log('this.state.amount ',this.state.amount);
     let methodCall = eip20Contract.methods.approve(ostComposerAddress, this.state.amount);
     let receipt = await this.sendTransaction(
