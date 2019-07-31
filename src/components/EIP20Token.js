@@ -28,6 +28,7 @@ export default class EIP20Token extends React.Component {
       this.setState({
         eip20TokenSymbol: symbol
       },()=>{
+        this.props.token.symbol = symbol;
       })
     });
 
@@ -39,6 +40,9 @@ export default class EIP20Token extends React.Component {
 
     if(this.state && this.state.EIP20Token){
       let eip20TokenBalance = await this.state.EIP20Token.methods.balanceOf(this.props.address).call()
+      this.props.token.eip20TokenBalance = eip20TokenBalance;
+      let balance = await this.props.token.web3.eth.getBalance(this.props.address);
+      this.props.token.balance = balance;
       eip20TokenBalance = this.props.token.web3.utils.fromWei(""+eip20TokenBalance,'ether')
       this.setState({eip20TokenBalance})
 
