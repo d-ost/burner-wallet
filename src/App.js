@@ -1144,7 +1144,7 @@ render() {
     header = (
       <Header
         openScanner={this.openScanner.bind(this)}
-        network={this.state.network}
+        network={this.state.network === 'Unknown' ? Mosaic.originRPC : this.state.network}
         total={totalBalance}
         ens={this.state.ens}
         title={this.state.title}
@@ -1973,7 +1973,7 @@ render() {
                     {defaultBalanceDisplay}
                     <Boost
                       buttonStyle={buttonStyle}
-                      web3={this.boostParams.web3}
+                      web3={this.boostParams.token.web3}
                       address={this.state.account}
                       goBack={this.goBack.bind(this)}
                       changeView={this.changeView}
@@ -1981,8 +1981,10 @@ render() {
                       changeAlert={this.changeAlert}
                       metaAccount={metaAccount}
                       ostComposerAddress={Mosaic.ostComposerAddress}
-                      valueTokenAddress={this.boostParams.address}
-                      gatewayAddress={this.boostParams.gatewayAddress}
+                      valueTokenAddress={this.boostParams.token.address}
+                      gatewayAddress={this.boostParams.token.gatewayAddress}
+                      balance={this.boostParams.balance}
+                      beneficiary={this.boostParams.metaAccount.address}
                     />
                   </div>
                   <Bottom
@@ -2006,13 +2008,11 @@ render() {
         { alert && <Footer alert={alert} changeAlert={this.changeAlert}/> }
         </div>
 
-
-
         <Dapparatus
         config={{
           DEBUG: false,
           hide: true,
-          requiredNetwork: ['Unknown', 'xDai'],
+          requiredNetwork: ['xDai'],
           metatxAccountGenerator: false,
         }}
         //used to pass a private key into Dapparatus
@@ -2098,6 +2098,7 @@ render() {
           }
         }}
         />
+
         <Gas
         network={this.state.network}
         onUpdate={(state)=>{

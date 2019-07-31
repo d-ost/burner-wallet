@@ -14,14 +14,18 @@ const supportedTokens = [
     logo: ostIcon,
     chain: 'origin',
     web3: web3Origin,
-    gatewayAddress: '0xA7f056b1320fE619571849f138Cd1Ae2f2e64179'
+    gatewayAddress: '0xA7f056b1320fE619571849f138Cd1Ae2f2e64179',
+    faucetURL:'',
+    chainId:'',
   },
   {
     type: 'BASE',
     logo: ethereumIcon,
     chain: 'origin',
     web3: web3Origin,
-    symbol: 'ETH'
+    symbol: 'ETH',
+    faucetURL:'',
+    chainId:'',
   },
   // {
   //   type: 'ERC',
@@ -35,7 +39,9 @@ const supportedTokens = [
     logo: ostIcon,
     chain: 'auxiliary',
     web3: web3Auxiliary,
-    symbol: 'dOST'
+    symbol: 'dOST',
+    faucetURL:'',
+    chainId:''
   }
 ];
 const Mosaic = {
@@ -45,6 +51,7 @@ const Mosaic = {
       return supportedTokens;
     }
     return [];
-  }
+  },
+  originRPC: originRPC
 };
 export default Mosaic;
