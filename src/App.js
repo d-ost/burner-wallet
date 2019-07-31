@@ -29,6 +29,7 @@ import History from './components/History';
 import Advanced from './components/Advanced';
 import BottomLinks from './components/BottomLinks';
 import MoreButtons from './components/MoreButtons';
+import Boost from "./components/Boost";
 import Admin from './components/Admin';
 import Vendor from './components/Vendor';
 import Vendors from './components/Vendors';
@@ -246,6 +247,12 @@ class App extends Component {
     }else if(cachedViewSetAge < 300000 && cachedView&&cachedView!=0){
       view = cachedView
     }
+    let originMetaAccount = {
+      address: '',
+      privateKey: ''
+    };
+    let ostComposerAddress = '';
+    let valueTokenAddress = '';
     console.log("CACHED VIEW",view)
     super(props);
     this.state = {
@@ -1947,6 +1954,33 @@ render() {
               <Loader loaderImage={LOADERIMAGE} mainStyle={mainStyle}/>
               </div>
             );
+            case 'boost':
+              return (
+                <div>
+                  <div className="send-to-address card w-100"
+                       style={{zIndex: 1}}>
+                    <NavCard title={i18n.t('boost_title')}
+                             goBack={this.goBack.bind(this)}/>
+                    {defaultBalanceDisplay}
+                    <Boost
+                      buttonStyle={buttonStyle}
+                      web3={this.state.web3}
+                      address={account}
+                      goBack={this.goBack.bind(this)}
+                      changeView={this.changeView}
+                      setReceipt={this.setReceipt}
+                      changeAlert={this.changeAlert}
+                      metaAccount={this.originMetaAccount}
+                      ostComposerAddress={this.ostComposerAddress}
+                      valueTokenAddress={this.valueTokenAddress}
+                    />
+                  </div>
+                  <Bottom
+                    text={i18n.t('cancel')}
+                    action={this.goBack.bind(this)}
+                  />
+                </div>
+              );
             default:
             return (
               <div>unknown view</div>
