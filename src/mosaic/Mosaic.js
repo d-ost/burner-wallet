@@ -51,6 +51,7 @@ const Mosaic = {
       return supportedTokens;
     }
     return [];
-  }
+  },
+  originRPC: originRPC
 };
 export default Mosaic;

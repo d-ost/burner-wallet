@@ -1144,7 +1144,7 @@ render() {
     header = (
       <Header
         openScanner={this.openScanner.bind(this)}
-        network={this.state.network}
+        network={this.state.network === 'Unknown' ? Mosaic.originRPC : this.state.network}
         total={totalBalance}
         ens={this.state.ens}
         title={this.state.title}
@@ -2008,13 +2008,11 @@ render() {
         { alert && <Footer alert={alert} changeAlert={this.changeAlert}/> }
         </div>
 
-
-
         <Dapparatus
         config={{
           DEBUG: false,
           hide: true,
-          requiredNetwork: ['Unknown', 'xDai'],
+          requiredNetwork: ['xDai'],
           metatxAccountGenerator: false,
         }}
         //used to pass a private key into Dapparatus
@@ -2100,6 +2098,7 @@ render() {
           }
         }}
         />
+
         <Gas
         network={this.state.network}
         onUpdate={(state)=>{
