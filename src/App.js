@@ -48,6 +48,7 @@ import core, { mainAsset as xdai } from './core';
 import EIP20Token from './components/EIP20Token';
 import BaseToken from './components/BaseToken';
 import Mosaic from './mosaic/Mosaic';
+import TokenSelector from './components/TokenSelector';
 
 
 //https://github.com/lesnitsky/react-native-webview-messaging/blob/v1/examples/react-native/web/index.js
@@ -833,6 +834,10 @@ handleBoost(params){
   this.boostParams = params;
   this.changeView('boost');
 }
+tokenSelected(token){
+  this.currentToken = token;
+  this.changeView('send_to_address');
+}
 goBack(){
   console.log("GO BACK")
   this.changeView('main')
@@ -1398,9 +1403,15 @@ render() {
             )
           }
 
+          const tokens = Mosaic.getSupportedTokens();
+          if (!this.currentToken && tokens.length>0) {
+            this.currentToken =tokens[0];
+          }
+
+          console.log('****************this.currentToken: ', this.currentToken);
+
           switch(view) {
             case 'main':
-              const tokens = Mosaic.getSupportedTokens();
               const renderObject = [];
               tokens.forEach((token)=>{
                 if (token.type === 'ERC') {
@@ -1582,8 +1593,21 @@ render() {
               <div>
                 <div className="send-to-address card w-100" style={{zIndex:1}}>
                   <NavCard title={i18n.t('send_to_address_title')} goBack={this.goBack.bind(this)}/>
-                  {defaultBalanceDisplay}
+                  <TokenSelector
+                    tokens={tokens}
+                    tokenChange={this.tokenSelected.bind(this)}
+                    metaAccount={metaAccount}
+                    state={this.state}
+                    address={account}
+                    openScanner={this.openScanner.bind(this)}
+                    buttonStyle={buttonStyle}
+                    changeAlert={this.changeAlert}
+                    handleBoost={this.handleBoost.bind(this)}
+                    goBack={this.goBack.bind(this)}
+                  />
                   <SendToAddress
+                    currentToken={this.currentToken}
+                    metaAccount={metaAccount}
                     convertToDollar={convertToDollar}
                     dollarSymbol={dollarSymbol}
                     parseAndCleanPath={this.parseAndCleanPath.bind(this)}
