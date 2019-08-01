@@ -1421,7 +1421,6 @@ render() {
                     dollarDisplay={dollarDisplay}
                     ERC20TOKEN={ERC20TOKEN}
                   />
-                  {moreButtons}
                   <RecentTransactions
                     dollarDisplay={dollarDisplay}
                     view={this.state.view}
@@ -1434,13 +1433,6 @@ render() {
                     recentTxs={ERC20TOKEN?this.state.fullRecentTxs:this.state.recentTxs}
                   />
                 </div>
-                <Bottom
-                  icon={"wrench"}
-                  text={i18n.t('advance_title')}
-                  action={()=>{
-                    this.changeView('advanced')
-                  }}
-                />
               </div>
             );
             case 'advanced':
