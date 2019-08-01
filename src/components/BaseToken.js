@@ -5,21 +5,12 @@ export default class BaseToken extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      balance: 0,
-    }
   }
 
   componentDidMount(){
     this.props.token.web3.eth.getBalance(this.props.address).then((balance)=>{
-      this.setState({
-        balance: this.props.token.web3.utils.fromWei(""+balance,'ether')
-      },()=>{
-      })
+      this.props.token.balance = balance;
     });
-
-    setInterval(this.pollInterval.bind(this),2500);
-    setTimeout(this.pollInterval.bind(this),30);
   }
 
   getSymbol() {
@@ -49,11 +40,11 @@ export default class BaseToken extends React.Component {
 
   getFaucetButton() {
     console.log('this.props.token  ', this.props.token);
-    console.log('base token this.state.balance ', this.state.balance);
-    console.log('base token this.state.balance ', typeof this.state.balance);
-    console.log("this.state.balance === '0' ", this.state.balance === 0);
+    console.log('base token this.state.balance ', this.props.token.balance);
+    console.log('base token this.state.balance ', typeof this.props.token.balance);
+    console.log("this.state.balance === '0' ", this.props.token.balance === 0);
 
-    if ("" + this.state.balance === '0' && this.props.token.chain === 'origin') {
+    if ("" + this.props.token.balance === '0' && this.props.token.chain === 'origin') {
       return (
         <button style={{
           marginRight: '15px',
@@ -78,18 +69,13 @@ export default class BaseToken extends React.Component {
     return ('');
   }
 
-  async pollInterval(){
-    let balance = await this.props.token.web3.eth.getBalance(this.props.address);
-    balance = this.props.token.web3.utils.fromWei(""+balance,'ether')
-    this.setState({balance})
-  }
-
-  clicked(name){
-    console.log("secondary button "+name+" was clicked")
-
+  async getBalance(){
+    this.props.token.balance = await this.props.token.web3.eth.getBalance(this.props.address);
   }
 
   render(){
+    this.getBalance();
+
     let opacity = 0.95;
     let iconDisplay = <img src={this.props.token.logo} style={{maxWidth:50,maxHeight:50}}/>
 
@@ -107,7 +93,7 @@ export default class BaseToken extends React.Component {
             verticalAlign: 'middle',
             marginLeft: '15px'}}>
             <div style={{fontSize:40,letterSpacing:-2}}>
-              {this.state.balance.toString(10).slice(0,8)}
+              {this.props.token.web3.utils.fromWei(""+this.props.token.balance,'ether').toString(10).slice(0,8)}
             </div>
           </Scaler>
         </div>

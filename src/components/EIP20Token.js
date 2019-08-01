@@ -8,33 +8,21 @@ export default class EIP20Token extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      EIP20Token: false,
-      EIP20TokenBalance: 0,
+      EIP20Token: false
     }
   }
 
 
   componentDidMount(){
-
     const EIP20Token = new this.props.token.web3.eth.Contract(abi,this.props.token.address);
 
+    EIP20Token.methods.symbol().call().then((symbol)=>{
+      this.props.token.symbol = symbol;
+    });
     this.setState({
-      EIP20Token: EIP20Token,
-      logo: this.props.token.logo,
-      eip20TokenBalance: this.props.token.web3.utils.fromWei(""+0,'ether'),
+      EIP20Token: EIP20Token
     },()=>{
     })
-
-    EIP20Token.methods.symbol().call().then((symbol)=>{
-      this.setState({
-        eip20TokenSymbol: symbol
-      },()=>{
-        this.props.token.symbol = symbol;
-      })
-    });
-
-    setInterval(this.pollInterval.bind(this),2500)
-    setTimeout(this.pollInterval.bind(this),30)
   }
 
   async fundFromFaucet() {
@@ -53,38 +41,25 @@ export default class EIP20Token extends React.Component {
     });
   }
 
-  async pollInterval(){
+  async getBalance(){
 
     if(this.state && this.state.EIP20Token){
-      let eip20TokenBalance = await this.state.EIP20Token.methods.balanceOf(this.props.address).call()
-      this.props.token.eip20TokenBalance = eip20TokenBalance;
-      let balance = await this.props.token.web3.eth.getBalance(this.props.address);
-      this.props.token.balance = balance;
-      eip20TokenBalance = this.props.token.web3.utils.fromWei(""+eip20TokenBalance,'ether')
-      this.setState({eip20TokenBalance})
-
+      this.props.token.eip20TokenBalance = await this.state.EIP20Token.methods.balanceOf(this.props.address).call()
+      this.props.token.balance = await this.props.token.web3.eth.getBalance(this.props.address);
     }
-  }
-
-  clicked(name){
-    console.log("secondary button "+name+" was clicked")
-    // /*
-    // Time to make a transaction with EIP20Token!
-    // */
-    // this.props.tx(this.state.EIP20Token.updateVar(name),120000,0,0,(result)=>{
-    //   console.log(result)
-    // })
-
   }
 
   canBoost() {
     return this.props.token.type === 'ERC'
       && this.props.token.chain !== 'auxiliary' &&
-      this.state.eip20TokenBalance !== '0'
+      this.props.token.eip20TokenBalance !== '0'
   }
 
   getSymbol() {
-    let symbol = this.state.eip20TokenSymbol;
+    let symbol = this.props.token.symbol;
+    if (symbol === undefined) {
+      return 'loading...';
+    }
     if (this.props.token.chain === 'auxiliary') {
       symbol = symbol+' 💪';
     }
@@ -108,7 +83,7 @@ export default class EIP20Token extends React.Component {
         }}
           onClick={() => this.props.handleBoost({
               token: this.props.token,
-              balance:this.state.eip20TokenBalance,
+              balance:this.props.token.eip20TokenBalance,
               metaAccount: this.props.metaAccount
             }
             )}
@@ -142,8 +117,8 @@ export default class EIP20Token extends React.Component {
   }
 
   render(){
+    this.getBalance();
 
-    console.log('can boost erc20', this.canBoost());
     if(!this.state.EIP20Token){
       return (
         <div>
@@ -153,7 +128,7 @@ export default class EIP20Token extends React.Component {
     }
 
     let opacity = 0.95;
-    let iconDisplay = <img src={this.state.logo} style={{maxWidth:50,maxHeight:50}}/>
+    let iconDisplay = <img src={this.props.token.logo} style={{maxWidth:50,maxHeight:50}}/>
 
     return (
       <div className="balance row" style={{opacity,paddingBottom:0,paddingLeft:20}}>
@@ -170,7 +145,7 @@ export default class EIP20Token extends React.Component {
             verticalAlign: 'middle',
             marginLeft: '15px'}}>
             <div style={{fontSize:40,letterSpacing:-2}}>
-              {this.state.eip20TokenBalance.toString(10).slice(0,8)}
+              {this.props.token.web3.utils.fromWei(this.props.token.eip20TokenBalance,'ether').toString(10).slice(0,8)}
             </div>
           </Scaler>
         </div>
