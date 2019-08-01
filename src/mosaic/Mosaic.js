@@ -15,8 +15,8 @@ const supportedTokens = [
     chain: 'origin',
     web3: web3Origin,
     gatewayAddress: '0xe11e76C1ecA13Ae4ABA871EabDf37C24b8e1928B',
-    faucetURL:'',
-    chainId:'',
+    faucetURL:'http://3.248.54.171:60502',
+    chainId:'5',
     balance:'0',
     eip20TokenBalance:'0',
   },
@@ -27,8 +27,8 @@ const supportedTokens = [
     chain: 'origin',
     web3: web3Origin,
     gatewayAddress: '0x6649c6FF3629aE875b91B6C1551139c9feaA2514',
-    faucetURL:'',
-    chainId:'',
+    faucetURL:'http://3.248.54.171:60501',
+    chainId:'5',
     balance:'0',
     eip20TokenBalance:'0',
   },
@@ -38,8 +38,8 @@ const supportedTokens = [
     chain: 'origin',
     web3: web3Origin,
     symbol: 'ETH',
-    faucetURL:'',
-    chainId:'',
+    faucetURL:'http://3.248.54.171:60500',
+    chainId:'5',
     balance:'0',
   },
   // {
@@ -61,7 +61,7 @@ const supportedTokens = [
   }
 ];
 const Mosaic = {
-  ostComposerAddress: '0xeaa192d486ac5243886a28001e27a68cae5fde4b',
+  ostComposerAddress: '0xEAA192D486ac5243886a28001E27A68caE5FDE4B',
   getSupportedTokens: () => {
     if (supportedTokens) {
       return supportedTokens;
