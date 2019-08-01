@@ -1115,7 +1115,6 @@ render() {
         openScanner={this.openScanner.bind(this)}
         network={'Mosaic Testnet'}
         total={totalBalance}
-        ens={this.state.ens}
         title={this.state.title}
         titleImage={titleImage}
         mainStyle={mainStyle}
@@ -1520,7 +1519,6 @@ render() {
                   <NavCard title={this.state.badges[this.state.selectedBadge].name} titleLink={this.state.badges[this.state.selectedBadge].external_url} goBack={this.goBack.bind(this)}/>
                   <SendBadge
                     changeView={this.changeView}
-                    ensLookup={this.ensLookup.bind(this)}
                     ERC20TOKEN={ERC20TOKEN}
                     buttonStyle={buttonStyle}
                     balance={balance}
@@ -1569,7 +1567,6 @@ render() {
                     parseAndCleanPath={this.parseAndCleanPath.bind(this)}
                     openScanner={this.openScanner.bind(this)}
                     scannerState={this.state.scannerState}
-                    ensLookup={this.ensLookup.bind(this)}
                     ERC20TOKEN={ERC20TOKEN}
                     buttonStyle={buttonStyle}
                     balance={balance}
@@ -1599,7 +1596,6 @@ render() {
                     receipt={this.state.receipt}
                     view={this.state.view}
                     block={this.state.block}
-                    ensLookup={this.ensLookup.bind(this)}
                     ERC20TOKEN={ERC20TOKEN}
                     buttonStyle={buttonStyle}
                     balance={balance}
@@ -1632,7 +1628,6 @@ render() {
                     dollarDisplay={dollarDisplay}
                     view={this.state.view}
                     block={this.state.block}
-                    ensLookup={this.ensLookup.bind(this)}
                     ERC20TOKEN={ERC20TOKEN}
                     buttonStyle={buttonStyle}
                     balance={balance}
@@ -1862,7 +1857,6 @@ render() {
                     daiBalance={this.state.daiBalance}
                     xdaiBalance={this.state.xdaiBalance}
                     daiContract={this.state.daiContract}
-                    ensContract={this.state.ensContract}
                     isVendor={this.state.isVendor}
                     isAdmin={this.state.isAdmin}
                     contracts={this.state.contracts}
