@@ -7,7 +7,7 @@ import Blockies from 'react-blockies';
 import { scroller } from 'react-scroll'
 import i18n from '../i18n';
 const queryString = require('query-string');
-const abi = require("../contracts/EIP20Token.abi.js");
+const abi = require("../mosaic-abi/EIP20.abi.js");
 
 export default class SendToAddress extends React.Component {
 

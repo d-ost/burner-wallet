@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { ContractLoader, Dapparatus, Transactions, Gas, Address, Events } from "dapparatus";
+import { ContractLoader, Dapparatus, Transactions, Gas, Events } from "dapparatus";
 import Web3 from 'web3';
 import axios from 'axios';
 import { I18nextProvider } from 'react-i18next';
@@ -27,7 +27,7 @@ import CashOut from "./components/CashOut";
 import MainCard from './components/MainCard';
 import History from './components/History';
 import Advanced from './components/Advanced';
-import BottomLinks from './components/BottomLinks';
+// import BottomLinks from './components/BottomLinks';
 import MoreButtons from './components/MoreButtons';
 import Boost from "./components/Boost";
 import Admin from './components/Admin';
@@ -41,7 +41,6 @@ import BurnWallet from './components/BurnWallet'
 import Exchange from './components/Exchange'
 import Bottom from './components/Bottom';
 import customRPCHint from './customRPCHint.png';
-import namehash from 'eth-ens-namehash'
 import incogDetect from './services/incogDetect.js'
 import core, { mainAsset as xdai } from './core';
 
@@ -56,7 +55,6 @@ import RNMessageChannel from 'react-native-webview-messaging';
 
 
 import bufficorn from './bufficorn.png';
-import cypherpunk from './cypherpunk.png';
 import ethImg from './images/ethereum.png';
 import daiImg from './images/dai.jpg';
 import xdaiImg from './images/xdai.jpg';
@@ -176,14 +174,6 @@ if(ERC20NAME=="BUFF"){
   mainStyle.mainColor = "#e72da3"
   mainStyle.mainColorAlt = "#f948b8"
   title = "Burner"
-  titleImage = (
-    <img src={cypherpunk} style={{
-      maxWidth:50,
-      maxHeight:50,
-      marginRight:15,
-      marginTop:-10
-    }}/>
-  )
 }
 
 
@@ -447,14 +437,13 @@ class App extends Component {
   }
   connectToRPC(){
     const { Contract } = core.getWeb3(MAINNET_CHAIN_ID).eth;
-    const ensContract = new Contract(require("./contracts/ENS.abi.js"),require("./contracts/ENS.address.js"))
     let daiContract
     try{
       daiContract = new Contract(require("./contracts/StableCoin.abi.js"),"0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359")
     }catch(e){
       console.log("ERROR LOADING DAI Stablecoin Contract",e)
     }
-    this.setState({ ensContract, daiContract });
+    this.setState({ daiContract });
   }
   componentWillUnmount() {
     clearInterval(interval)
@@ -660,17 +649,7 @@ class App extends Component {
       }
     }
   }
-  async ensLookup(name){
-    let hash = namehash.hash(name)
-    console.log("namehash",name,hash)
-    let resolver = await this.state.ensContract.methods.resolver(hash).call()
-    if(resolver=="0x0000000000000000000000000000000000000000") return "0x0000000000000000000000000000000000000000"
-    console.log("resolver",resolver)
-    const { Contract } = core.getWeb3(MAINNET_CHAIN_ID).eth;
-    const ensResolver = new Contract(require("./contracts/ENSResolver.abi.js"),resolver)
-    console.log("ensResolver:",ensResolver)
-    return ensResolver.methods.addr(hash).call()
-  }
+
   async chainClaim(tx, contracts) {
     console.log("DOING CLAIM ONCHAIN", this.state.claimId, this.state.claimKey, this.state.account);
     this.setState({sending: true})
@@ -1079,21 +1058,6 @@ render() {
   if(web3){
     web3_setup = (
       <div>
-      <ContractLoader
-      key="ContractLoader"
-      config={{DEBUG: true}}
-      web3={web3}
-      require={path => {
-        return require(`${__dirname}/${path}`)
-      }}
-      onReady={(contracts, customLoader) => {
-        console.log("contracts loaded", contracts)
-        this.setState({contracts: contracts,customLoader: customLoader}, async () => {
-          console.log("Contracts Are Ready:", contracts)
-          this.checkClaim(tx, contracts);
-        })
-      }}
-      />
       <Transactions
       key="Transactions"
       config={{DEBUG: false, hide: true}}
