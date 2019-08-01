@@ -26,9 +26,11 @@ export default class EIP20Token extends React.Component {
   }
 
   async fundFromFaucet() {
+    console.log('Funding for faucet ');
     const {faucetURL, chainId} = this.props.token;
     const beneficiary = this.props.metaAccount.address;
 
+    console.log('faucetURL ', faucetURL, 'chainId ',chainId,'beneficiary ',beneficiary );
     const response = await axios.post(faucetURL, {
         beneficiary: `${beneficiary}@${chainId}`,
       }
