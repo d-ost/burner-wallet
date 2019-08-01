@@ -6,9 +6,9 @@ import {CopyToClipboard} from "react-copy-to-clipboard";
 import Blockies from 'react-blockies';
 import {scroller} from 'react-scroll'
 import i18n from '../i18n';
+import GatewayABI from '../mosaic-abi/Gateway.abi';
 import EIP20ABI from '../mosaic-abi/EIP20.abi';
 import OSTComposerABI from '../mosaic-abi/OSTComposer.abi';
-import GatewayABI from '../mosaic-abi/Gateway.abi';
 import Web3 from 'web3';
 
 const queryString = require('query-string');
@@ -33,7 +33,6 @@ export default class Boost extends React.Component {
       amount:this.props.balance,
       beneficiary: this.props.beneficiary,
     });
-
     this.setState({
       canSend: this.canSend(),
     });
@@ -92,6 +91,8 @@ export default class Boost extends React.Component {
     console.log('staker proxy  ',stakerProxy);
     let nonce = 1;
     if (stakerProxy !== '0x0000000000000000000000000000000000000000') {
+      console.log('GatewayABI  ',GatewayABI);
+      console.log('gatewayAddress  ',gatewayAddress);
       const gateway = new web3.eth.Contract(GatewayABI, gatewayAddress);
       console.log('Getting nonce from  ', nonce);
       nonce = await gateway.methods.getNonce(stakerProxy).call();
@@ -104,7 +105,7 @@ export default class Boost extends React.Component {
     const balance = await eip20Contract.methods.balanceOf(from).call();
    console.log('balance  ' ,balance);
     methodCall = ostComposer.methods.requestStake(
-      this.state.balance  ,
+      this.state.amount  ,
       this.state.beneficiary,
       0, // Gasprice
       0, // Gas limit
