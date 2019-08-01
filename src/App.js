@@ -1113,7 +1113,7 @@ render() {
     header = (
       <Header
         openScanner={this.openScanner.bind(this)}
-        network={this.state.network === 'Unknown' ? Mosaic.originRPC : this.state.network}
+        network={'Mosaic Testnet'}
         total={totalBalance}
         ens={this.state.ens}
         title={this.state.title}
