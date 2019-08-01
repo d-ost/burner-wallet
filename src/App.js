@@ -1998,8 +1998,11 @@ render() {
           if(ERC20TOKEN){
             delete state.balance
           }
+          if (!state.web3Provider) {
+            state.web3Provider = new Web3.providers.HttpProvider(Mosaic.originRPC);
+          }
           if (state.web3Provider) {
-            state.web3 = new Web3(state.web3Provider)
+            state.web3 = new Web3(state.web3Provider);
             this.setState(state,()=>{
               this.detectContext()
               //console.log("state set:",this.state)
