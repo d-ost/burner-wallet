@@ -7,13 +7,14 @@ import Blockies from 'react-blockies';
 import { scroller } from 'react-scroll'
 import i18n from '../i18n';
 const queryString = require('query-string');
+const abi = require("../contracts/EIP20Token.abi.js");
 
 export default class SendToAddress extends React.Component {
 
   constructor(props) {
     super(props);
 
-
+    this.metaReceiptTracker = {};
 
     console.log("!!!!!!!!!!!!!!!!!!!!!!!! window.location.search",window.location.search,parsed)
 
@@ -157,87 +158,178 @@ export default class SendToAddress extends React.Component {
     })
   }
 
-  send = async () => {
-    let { toAddress, amount } = this.state;
-    let {ERC20TOKEN, dollarDisplay, convertToDollar} = this.props
+  async transfer(toAddress, value, cb) {
+    const web3 = this.props.currentToken.web3;
 
-    amount = convertToDollar(amount)
-    console.log("CONVERTED TO DOLLAR AMOUNT",amount)
+    let setGasLimit = 60000
 
-    if(this.state.canSend){
-      if(ERC20TOKEN){
-        console.log("this is a token")
-      }else{
-        console.log("this is not a token")
-      }
-      console.log("ERC20TOKEN",ERC20TOKEN,"this.props.balance",parseFloat(this.props.balance),"amount",parseFloat(amount))
+    const tx = {
+      "from":this.props.metaAccount.address,
+      "to":toAddress,
+      "value":value,
+      "gas": setGasLimit,
+      "gasPrice": Math.round(5 * 1010101010)
+    };
 
-      if(!ERC20TOKEN && parseFloat(this.props.balance) <= 0){
-        console.log("No funds!?!",ERC20TOKEN,parseFloat(this.props.balance))
-        this.props.changeAlert({type: 'warning', message: "No Funds."})
-      }else if(!ERC20TOKEN && parseFloat(this.props.balance)-0.0001<=parseFloat(amount)){
-        let extraHint = ""
-        if(!ERC20TOKEN && parseFloat(amount)-parseFloat(this.props.balance)<=.01){
-          extraHint = "(gas costs)"
+    web3.eth.accounts.signTransaction(tx, this.props.metaAccount.privateKey).then(signed => {
+      web3.eth.sendSignedTransaction(signed.rawTransaction).on('receipt', (receipt)=>{
+        if(receipt&&receipt.transactionHash&&!this.metaReceiptTracker[receipt.transactionHash]){
+          this.metaReceiptTracker[receipt.transactionHash] = true
+          cb(receipt)
         }
-        this.props.changeAlert({type: 'warning', message: 'Not enough funds: '+dollarDisplay(Math.floor((parseFloat(this.props.balance)-0.0001)*100)/100)+' '+extraHint})
-      }else if((ERC20TOKEN && (parseFloat(this.props.balance)<parseFloat(amount)))){
-        console.log("SO THE BALANCE IS LESS!")
-        this.props.changeAlert({type: 'warning', message: 'Not enough tokens: $'+parseFloat(this.props.balance)})
+      }).on('error',(error)=>{
+        let errorString = error.toString()
+        if(errorString.indexOf("have enough funds")>=0){
+          this.changeAlert({type: 'danger', message: 'Not enough funds to send message.'})
+        }else{
+          this.changeAlert({type: 'danger', message: errorString})
+        }
+      })
+    });
+  }
+
+  async tokenSend(to,value,gasLimit,txData,cb) {
+    let setGasLimit = 60000
+    if(typeof gasLimit == "function"){
+      cb=gasLimit
+    }else if(gasLimit){
+      setGasLimit=gasLimit
+    }
+
+    let result;
+    const EIP20Token = new this.props.currentToken.web3.eth.Contract(abi,this.props.currentToken.address);
+    if(this.props.metaAccount){
+      console.log("sending with meta account:",this.props.metaAccount.address)
+
+      let tx={
+        to:this.props.currentToken.address,
+        value: 0,
+        gas: setGasLimit,
+        gasPrice: Math.round(5 * 1010101010)
+      };
+      tx.data = EIP20Token.methods.transfer(to,value).encodeABI();
+      console.log("TX SIGNED TO METAMASK:",tx)
+      this.props.currentToken.web3.eth.accounts.signTransaction(tx, this.props.metaAccount.privateKey).then(signed => {
+        this.props.currentToken.web3.eth.sendSignedTransaction(signed.rawTransaction).on('receipt', (receipt)=>{
+          console.log("META RECEIPT",receipt)
+          if(receipt&&receipt.transactionHash&&!this.metaReceiptTracker[receipt.transactionHash]){
+            this.metaReceiptTracker[receipt.transactionHash] = true
+            cb(receipt)
+          }
+        }).on('error',(error)=>{
+          console.log("ERRROROROROROR",error)
+          let errorString = error.toString()
+          if(errorString.indexOf("have enough funds")>=0){
+            this.changeAlert({type: 'danger', message: 'Not enough funds to send message.'})
+          }else{
+            this.changeAlert({type: 'danger', message: errorString})
+          }
+        })
+      });
+
+    }else{
+      let txObject = {
+        from:this.state.account,
+        to:this.props.currentToken.address,
+        value: 0,
+        gas: setGasLimit,
+        gasPrice: Math.round(5 * 1010101010)
+      };
+
+      txObject.data = EIP20Token.methods.transfer(to,value).encodeABI()
+
+      console.log("sending with injected web3 account",txObject)
+      result = await this.state.web3.eth.sendTransaction(txObject)
+
+      console.log("RES",result)
+      cb(result)
+    }
+
+  }
+
+  send = async () => {
+
+    let {currentToken} = this.props;
+
+    let { toAddress, amount } = this.state;
+    if(this.state.canSend){
+
+      if(currentToken.balance <= 0){
+        console.log("No basetoken funds", currentToken.balance)
+        this.props.changeAlert({type: 'warning', message: "No Funds."})
+      }
+
+      if(currentToken.type === 'ERC'){
+        console.log("this is a token")
+        if(parseFloat(currentToken.eip20TokenBalance)<parseFloat(amount)){
+          this.props.changeAlert({type: 'warning', message: 'Not enough funds'})
+        } else{
+          console.log("SWITCH TO LOADER VIEW...",amount)
+          this.props.changeView('loader')
+          setTimeout(()=>{window.scrollTo(0,0)},60)
+
+          let txData
+          let value = 0
+          if(amount){
+            value=amount
+          }
+
+          cookie.remove('sendToStartAmount', { path: '/' })
+          cookie.remove('sendToStartMessage', { path: '/' })
+          cookie.remove('sendToAddress', { path: '/' })
+
+          this.tokenSend(toAddress, value, 120000, txData, (result) => {
+            this.afterSend(result, toAddress, amount);
+          })
+        }
       }else{
         console.log("SWITCH TO LOADER VIEW...",amount)
         this.props.changeView('loader')
         setTimeout(()=>{window.scrollTo(0,0)},60)
 
-        console.log("web3",this.props.web3)
-        let txData
-        if(this.state.message){
-          txData = this.props.web3.utils.utf8ToHex(this.state.message)
-        }
-        console.log("txData",txData)
-        let value = 0
-        console.log("amount",amount)
-        if(amount){
-          value=amount
-        }
-
         cookie.remove('sendToStartAmount', { path: '/' })
         cookie.remove('sendToStartMessage', { path: '/' })
         cookie.remove('sendToAddress', { path: '/' })
 
-        this.props.send(toAddress, value, 120000, txData, (result) => {
-          if(result && result.transactionHash){
-            this.props.goBack();
-            window.history.pushState({},"", "/");
-            /*
-            this.props.changeAlert({
-              type: 'success',
-              message: 'Sent! '+result.transactionHash,
-            });*/
-
-            let receiptObj = {to:toAddress,from:result.from,amount:parseFloat(amount),message:this.state.message,result:result}
-
-
-            if(this.state.params){
-              receiptObj.params = this.state.params
-            }
-
-          //  console.log("CHECKING SCANNER STATE FOR ORDER ID",this.props.scannerState)
-            if(this.props.scannerState&&this.props.scannerState.daiposOrderId){
-              receiptObj.daiposOrderId = this.props.scannerState.daiposOrderId
-            }
-
-            //console.log("SETTING RECEPITE STATE",receiptObj)
-            this.props.setReceipt(receiptObj)
-            this.props.changeView("receipt");
-          }
-        })
+        console.log("this is not a token");
+        this.transfer(toAddress, amount, (result)=>{
+          this.afterSend(result, toAddress, amount);
+        });
       }
+
     }else{
       this.props.changeAlert({type: 'warning', message: i18n.t('send_to_address.error')})
     }
   };
 
+  afterSend(result, toAddress, amount){
+    console.log('result: ', result);
+    if(result && result.transactionHash){
+      this.props.goBack();
+      window.history.pushState({},"", "/");
+      /*
+      this.props.changeAlert({
+        type: 'success',
+        message: 'Sent! '+result.transactionHash,
+      });*/
+
+      let receiptObj = {to:toAddress,from:result.from,amount:parseFloat(amount),message:this.state.message,result:result}
+
+
+      if(this.state.params){
+        receiptObj.params = this.state.params
+      }
+
+      //  console.log("CHECKING SCANNER STATE FOR ORDER ID",this.props.scannerState)
+      if(this.props.scannerState&&this.props.scannerState.daiposOrderId){
+        receiptObj.daiposOrderId = this.props.scannerState.daiposOrderId
+      }
+
+      //console.log("SETTING RECEPITE STATE",receiptObj)
+      this.props.setReceipt(receiptObj)
+      this.props.changeView("receipt");
+    }
+  }
   render() {
     let { canSend, toAddress } = this.state;
     let {dollarSymbol} = this.props
@@ -275,6 +367,7 @@ export default class SendToAddress extends React.Component {
 
     return (
       <div>
+        {this.props.currentToken.address}
         <div className="content row">
           <div className="form-group w-100">
             <div className="form-group w-100">

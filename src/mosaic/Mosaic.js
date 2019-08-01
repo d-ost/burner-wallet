@@ -10,11 +10,11 @@ const web3Auxiliary = new Web3(new Web3.providers.HttpProvider(auxiliaryRPC));
 const supportedTokens = [
   {
     type: 'ERC',
-    address: '0x9AC77F4c0ca4D0F2142D7a77175cf4F1295fb2d8',
+    address: '0xd426b22f3960d01189a3d548b45a7202489ff4de',
     logo: ostIcon,
     chain: 'origin',
     web3: web3Origin,
-    gatewayAddress: '0xA7f056b1320fE619571849f138Cd1Ae2f2e64179',
+    gatewayAddress: '0xe11e76C1ecA13Ae4ABA871EabDf37C24b8e1928B',
     faucetURL:'',
     chainId:'',
   },
@@ -45,7 +45,7 @@ const supportedTokens = [
   }
 ];
 const Mosaic = {
-  ostComposerAddress: '0xC0996cF47c33c138b45e9E043F180a5653a752a0',
+  ostComposerAddress: '0xeaa192d486ac5243886a28001e27a68cae5fde4b',
   getSupportedTokens: () => {
     if (supportedTokens) {
       return supportedTokens;
