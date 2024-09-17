@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { ContractLoader, Dapparatus, Transactions, Gas, Address, Events } from "dapparatus";
+import { ContractLoader, Dapparatus, Transactions, Gas, Events } from "dapparatus";
 import Web3 from 'web3';
 import axios from 'axios';
 import { I18nextProvider } from 'react-i18next';
@@ -27,8 +27,9 @@ import CashOut from "./components/CashOut";
 import MainCard from './components/MainCard';
 import History from './components/History';
 import Advanced from './components/Advanced';
-import BottomLinks from './components/BottomLinks';
+// import BottomLinks from './components/BottomLinks';
 import MoreButtons from './components/MoreButtons';
+import Boost from "./components/Boost";
 import Admin from './components/Admin';
 import Vendor from './components/Vendor';
 import Vendors from './components/Vendors';
@@ -40,16 +41,20 @@ import BurnWallet from './components/BurnWallet'
 import Exchange from './components/Exchange'
 import Bottom from './components/Bottom';
 import customRPCHint from './customRPCHint.png';
-import namehash from 'eth-ens-namehash'
 import incogDetect from './services/incogDetect.js'
 import core, { mainAsset as xdai } from './core';
+
+import EIP20Token from './components/EIP20Token';
+import BaseToken from './components/BaseToken';
+import Mosaic from './mosaic/Mosaic';
+import TokenSelector from './components/TokenSelector';
+
 
 //https://github.com/lesnitsky/react-native-webview-messaging/blob/v1/examples/react-native/web/index.js
 import RNMessageChannel from 'react-native-webview-messaging';
 
 
 import bufficorn from './bufficorn.png';
-import cypherpunk from './cypherpunk.png';
 import ethImg from './images/ethereum.png';
 import daiImg from './images/dai.jpg';
 import xdaiImg from './images/xdai.jpg';
@@ -169,14 +174,6 @@ if(ERC20NAME=="BUFF"){
   mainStyle.mainColor = "#e72da3"
   mainStyle.mainColorAlt = "#f948b8"
   title = "Burner"
-  titleImage = (
-    <img src={cypherpunk} style={{
-      maxWidth:50,
-      maxHeight:50,
-      marginRight:15,
-      marginTop:-10
-    }}/>
-  )
 }
 
 
@@ -246,6 +243,12 @@ class App extends Component {
     }else if(cachedViewSetAge < 300000 && cachedView&&cachedView!=0){
       view = cachedView
     }
+    let originMetaAccount = {
+      address: '',
+      privateKey: ''
+    };
+    let ostComposerAddress = '';
+    let valueTokenAddress = '';
     console.log("CACHED VIEW",view)
     super(props);
     this.state = {
@@ -424,24 +427,23 @@ class App extends Component {
         }
       }
     }
-    setTimeout(this.poll.bind(this),150)
-    setTimeout(this.poll.bind(this),650)
-    interval = setInterval(this.poll.bind(this),1500)
-    intervalLong = setInterval(this.longPoll.bind(this),45000)
-    setTimeout(this.longPoll.bind(this),150)
+    //setTimeout(this.poll.bind(this),150)
+    //setTimeout(this.poll.bind(this),650)
+    interval = setInterval(this.poll.bind(this),7000)
+    //intervalLong = setInterval(this.longPoll.bind(this),45000)
+    //setTimeout(this.longPoll.bind(this),150)
 
     this.connectToRPC()
   }
   connectToRPC(){
     const { Contract } = core.getWeb3(MAINNET_CHAIN_ID).eth;
-    const ensContract = new Contract(require("./contracts/ENS.abi.js"),require("./contracts/ENS.address.js"))
     let daiContract
     try{
       daiContract = new Contract(require("./contracts/StableCoin.abi.js"),"0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359")
     }catch(e){
       console.log("ERROR LOADING DAI Stablecoin Contract",e)
     }
-    this.setState({ ensContract, daiContract });
+    this.setState({ daiContract });
   }
   componentWillUnmount() {
     clearInterval(interval)
@@ -647,17 +649,7 @@ class App extends Component {
       }
     }
   }
-  async ensLookup(name){
-    let hash = namehash.hash(name)
-    console.log("namehash",name,hash)
-    let resolver = await this.state.ensContract.methods.resolver(hash).call()
-    if(resolver=="0x0000000000000000000000000000000000000000") return "0x0000000000000000000000000000000000000000"
-    console.log("resolver",resolver)
-    const { Contract } = core.getWeb3(MAINNET_CHAIN_ID).eth;
-    const ensResolver = new Contract(require("./contracts/ENSResolver.abi.js"),resolver)
-    console.log("ensResolver:",ensResolver)
-    return ensResolver.methods.addr(hash).call()
-  }
+
   async chainClaim(tx, contracts) {
     console.log("DOING CLAIM ONCHAIN", this.state.claimId, this.state.claimKey, this.state.account);
     this.setState({sending: true})
@@ -817,6 +809,14 @@ changeAlert = (alert, hide=true) => {
     }, 2000);
   }
 };
+handleBoost(params){
+  this.boostParams = params;
+  this.changeView('boost');
+}
+tokenSelected(token){
+  this.currentToken = token;
+  this.changeView('send_to_address');
+}
 goBack(){
   console.log("GO BACK")
   this.changeView('main')
@@ -1058,21 +1058,6 @@ render() {
   if(web3){
     web3_setup = (
       <div>
-      <ContractLoader
-      key="ContractLoader"
-      config={{DEBUG: true}}
-      web3={web3}
-      require={path => {
-        return require(`${__dirname}/${path}`)
-      }}
-      onReady={(contracts, customLoader) => {
-        console.log("contracts loaded", contracts)
-        this.setState({contracts: contracts,customLoader: customLoader}, async () => {
-          console.log("Contracts Are Ready:", contracts)
-          this.checkClaim(tx, contracts);
-        })
-      }}
-      />
       <Transactions
       key="Transactions"
       config={{DEBUG: false, hide: true}}
@@ -1128,9 +1113,8 @@ render() {
     header = (
       <Header
         openScanner={this.openScanner.bind(this)}
-        network={this.state.network}
+        network={'Mosaic Testnet'}
         total={totalBalance}
-        ens={this.state.ens}
         title={this.state.title}
         titleImage={titleImage}
         mainStyle={mainStyle}
@@ -1382,41 +1366,47 @@ render() {
             )
           }
 
+          const tokens = Mosaic.getSupportedTokens();
+          if (!this.currentToken && tokens.length>0) {
+            this.currentToken =tokens[0];
+          }
+
+          console.log('****************this.currentToken: ', this.currentToken);
+
           switch(view) {
             case 'main':
+              const renderObject = [];
+              tokens.forEach((token)=>{
+                if (token.type === 'ERC') {
+                  renderObject.push(<EIP20Token
+                    metaAccount={metaAccount}
+                    state={this.state}
+                    address={account}
+                    openScanner={this.openScanner.bind(this)}
+                    buttonStyle={buttonStyle}
+                    changeAlert={this.changeAlert}
+                    handleBoost={this.handleBoost.bind(this)}
+                    goBack={this.goBack.bind(this)}
+                    token={token}
+                  />)
+                } else if (token.type === 'BASE') {
+                  renderObject.push(<BaseToken
+                    metaAccount={metaAccount}
+                    state={this.state}
+                    address={account}
+                    openScanner={this.openScanner.bind(this)}
+                    buttonStyle={buttonStyle}
+                    changeAlert={this.changeAlert}
+                    goBack={this.goBack.bind(this)}
+                    token={token}
+                  />);
+                }
+              });
+
             return (
               <div>
                 <div className="main-card card w-100" style={{zIndex:1}}>
-
-
-                  {extraTokens}
-
-                  <Balance
-                    icon={xdaiImg}
-                    selected={selected}
-                    text={xdai.name}
-                    amount={this.state.xdaiBalance}
-                    address={account}
-                    dollarDisplay={dollarDisplay}
-                  />
-                  <Ruler/>
-                  <Balance
-                    icon={daiImg}
-                    selected={selected}
-                    text="DAI"
-                    amount={this.state.daiBalance}
-                    address={account}
-                    dollarDisplay={dollarDisplay}
-                  />
-                  <Ruler/>
-                  <Balance
-                    icon={ethImg}
-                    selected={selected}
-                    text="ETH"
-                    amount={parseFloat(this.state.ethBalance) * parseFloat(this.state.ethprice)}
-                    address={account}
-                    dollarDisplay={dollarDisplay}
-                  />
+                  {renderObject}
                   <Ruler/>
                   {badgeDisplay}
 
@@ -1430,7 +1420,6 @@ render() {
                     dollarDisplay={dollarDisplay}
                     ERC20TOKEN={ERC20TOKEN}
                   />
-                  {moreButtons}
                   <RecentTransactions
                     dollarDisplay={dollarDisplay}
                     view={this.state.view}
@@ -1443,13 +1432,6 @@ render() {
                     recentTxs={ERC20TOKEN?this.state.fullRecentTxs:this.state.recentTxs}
                   />
                 </div>
-                <Bottom
-                  icon={"wrench"}
-                  text={i18n.t('advance_title')}
-                  action={()=>{
-                    this.changeView('advanced')
-                  }}
-                />
               </div>
             );
             case 'advanced':
@@ -1537,7 +1519,6 @@ render() {
                   <NavCard title={this.state.badges[this.state.selectedBadge].name} titleLink={this.state.badges[this.state.selectedBadge].external_url} goBack={this.goBack.bind(this)}/>
                   <SendBadge
                     changeView={this.changeView}
-                    ensLookup={this.ensLookup.bind(this)}
                     ERC20TOKEN={ERC20TOKEN}
                     buttonStyle={buttonStyle}
                     balance={balance}
@@ -1566,14 +1547,26 @@ render() {
               <div>
                 <div className="send-to-address card w-100" style={{zIndex:1}}>
                   <NavCard title={i18n.t('send_to_address_title')} goBack={this.goBack.bind(this)}/>
-                  {defaultBalanceDisplay}
+                  <TokenSelector
+                    tokens={tokens}
+                    tokenChange={this.tokenSelected.bind(this)}
+                    metaAccount={metaAccount}
+                    state={this.state}
+                    address={account}
+                    openScanner={this.openScanner.bind(this)}
+                    buttonStyle={buttonStyle}
+                    changeAlert={this.changeAlert}
+                    handleBoost={this.handleBoost.bind(this)}
+                    goBack={this.goBack.bind(this)}
+                  />
                   <SendToAddress
+                    currentToken={this.currentToken}
+                    metaAccount={metaAccount}
                     convertToDollar={convertToDollar}
                     dollarSymbol={dollarSymbol}
                     parseAndCleanPath={this.parseAndCleanPath.bind(this)}
                     openScanner={this.openScanner.bind(this)}
                     scannerState={this.state.scannerState}
-                    ensLookup={this.ensLookup.bind(this)}
                     ERC20TOKEN={ERC20TOKEN}
                     buttonStyle={buttonStyle}
                     balance={balance}
@@ -1603,7 +1596,6 @@ render() {
                     receipt={this.state.receipt}
                     view={this.state.view}
                     block={this.state.block}
-                    ensLookup={this.ensLookup.bind(this)}
                     ERC20TOKEN={ERC20TOKEN}
                     buttonStyle={buttonStyle}
                     balance={balance}
@@ -1636,7 +1628,6 @@ render() {
                     dollarDisplay={dollarDisplay}
                     view={this.state.view}
                     block={this.state.block}
-                    ensLookup={this.ensLookup.bind(this)}
                     ERC20TOKEN={ERC20TOKEN}
                     buttonStyle={buttonStyle}
                     balance={balance}
@@ -1866,7 +1857,6 @@ render() {
                     daiBalance={this.state.daiBalance}
                     xdaiBalance={this.state.xdaiBalance}
                     daiContract={this.state.daiContract}
-                    ensContract={this.state.ensContract}
                     isVendor={this.state.isVendor}
                     isAdmin={this.state.isAdmin}
                     contracts={this.state.contracts}
@@ -1947,6 +1937,36 @@ render() {
               <Loader loaderImage={LOADERIMAGE} mainStyle={mainStyle}/>
               </div>
             );
+            case 'boost':
+              return (
+                <div>
+                  <div className="send-to-address card w-100"
+                       style={{zIndex: 1}}>
+                    <NavCard title={i18n.t('boost_title')}
+                             goBack={this.goBack.bind(this)}/>
+                    {defaultBalanceDisplay}
+                    <Boost
+                      buttonStyle={buttonStyle}
+                      web3={this.boostParams.token.web3}
+                      address={this.state.account}
+                      goBack={this.goBack.bind(this)}
+                      changeView={this.changeView}
+                      setReceipt={this.setReceipt}
+                      changeAlert={this.changeAlert}
+                      metaAccount={metaAccount}
+                      ostComposerAddress={Mosaic.ostComposerAddress}
+                      valueTokenAddress={this.boostParams.token.address}
+                      gatewayAddress={this.boostParams.token.gatewayAddress}
+                      balance={this.boostParams.balance}
+                      beneficiary={this.boostParams.metaAccount.address}
+                    />
+                  </div>
+                  <Bottom
+                    text={i18n.t('cancel')}
+                    action={this.goBack.bind(this)}
+                  />
+                </div>
+              );
             default:
             return (
               <div>unknown view</div>
@@ -1962,13 +1982,11 @@ render() {
         { alert && <Footer alert={alert} changeAlert={this.changeAlert}/> }
         </div>
 
-
-
         <Dapparatus
         config={{
           DEBUG: false,
           hide: true,
-          requiredNetwork: ['Unknown', 'xDai'],
+          requiredNetwork: ['xDai'],
           metatxAccountGenerator: false,
         }}
         //used to pass a private key into Dapparatus
@@ -2054,6 +2072,7 @@ render() {
           }
         }}
         />
+
         <Gas
         network={this.state.network}
         onUpdate={(state)=>{
